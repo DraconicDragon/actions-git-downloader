@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Read repository URL
       id: read-repo-url
@@ -34,17 +34,20 @@ jobs:
     - name: Install GitHub CLI
       run: |
         sudo apt-get install -y gh
-        gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create a release
       id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         TAG_NAME="release-$(date +'%Y%m%d%H%M%S')"
-        gh release create $TAG_NAME compressed-repo.zip --title "Automated Release $TAG_NAME" --notes "Automated release containing compressed repository."
+        gh release create $TAG_NAME compressed-repo.zip --title "Automated Release $TAG_NAME" --notes "Automated release containing compressed repository." --token $GITHUB_TOKEN
 
     - name: Delete older releases
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh release list --limit 100 | tail -n +4 | while read -r line ; do
           TAG=$(echo $line | awk '{print $1}')
-          gh release delete $TAG -y
+          gh release delete $TAG -y --token $GITHUB_TOKEN
         done
