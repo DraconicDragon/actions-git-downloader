@@ -1,0 +1,38 @@
+name: Clone and Compress
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  clone-compress:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Read repository URL
+      id: read-repo-url
+      run: echo "::set-output name=url::$(cat repo.txt)"
+      
+    - name: Clone the specified repository
+      run: git clone --recurse-submodules ${{ steps.read-repo-url.outputs.url }} cloned-repo
+
+    - name: Update submodules
+      run: |
+        cd cloned-repo
+        git submodule update --init --recursive
+
+    - name: Compress the repository
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zip
+        zip -r9 compressed-repo.zip cloned-repo
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: compressed-repo
+        path: compressed-repo.zip
