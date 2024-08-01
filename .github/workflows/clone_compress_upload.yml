@@ -1,4 +1,4 @@
-name: Release Workflow
+name: Clone and Compress
 
 on:
   push:
@@ -6,61 +6,45 @@ on:
       - main
 
 jobs:
-  create_release:
+  clone-compress:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Read repository URL
-        id: repo_url
-        run: echo "REPO_URL=$(cat repo.txt)" >> $GITHUB_ENV
+    - name: Read repository URL
+      id: read-repo-url
+      run: echo "::set-output name=url::$(cat repo.txt)"
+      
+    - name: Clone the specified repository
+      run: git clone --recurse-submodules ${{ steps.read-repo-url.outputs.url }} cloned-repo
 
-      - name: Clone repository
-        run: git clone --recurse-submodules ${{ env.REPO_URL }} cloned_repo
+    - name: Update submodules
+      run: |
+        cd cloned-repo
+        git submodule update --init --recursive
 
-      - name: Update submodules
-        working-directory: cloned_repo
-        run: git submodule update --remote --merge
+    - name: Compress the repository
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zip
+        zip -r9 compressed-repo.zip cloned-repo
 
-      - name: Zip the repository
-        run: |
-          sudo apt-get install -y zip
-          zip -r -9 repo.zip cloned_repo
+    - name: Install GitHub CLI
+      run: |
+        sudo apt-get install -y gh
+        gh auth login --with-token ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create a new release
-        id: create_release
-        uses: joutvhu/create-release@v1.0.1
-        with:
-          tag_name: ${{ github.sha }}
-          release_name: Release ${{ github.sha }}
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create a release
+      id: create_release
+      run: |
+        TAG_NAME="release-$(date +'%Y%m%d%H%M%S')"
+        gh release create $TAG_NAME compressed-repo.zip --title "Automated Release $TAG_NAME" --notes "Automated release containing compressed repository."
 
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v2
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./repo.zip
-          asset_name: repo.zip
-          asset_content_type: application/zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish the release
-        uses: eregon/publish-release@v1.0.6
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup old releases
-        run: |
-          old_releases=$(gh release list --limit 100 | tail -n +4 | awk '{print $1}')
-          for release in $old_releases; do
-            gh release delete $release -y
-          done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Delete older releases
+      run: |
+        gh release list --limit 100 | tail -n +4 | while read -r line ; do
+          TAG=$(echo $line | awk '{print $1}')
+          gh release delete $TAG -y
+        done
