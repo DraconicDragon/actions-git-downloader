@@ -1,1 +1,1 @@
-https://github.com/receyuki/comfyui-prompt-reader-node
+https://github.com/ssitu/ComfyUI_UltimateSDUpscale
