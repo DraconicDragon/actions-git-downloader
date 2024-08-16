@@ -30,9 +30,7 @@ jobs:
         # Create the React project
 
       - name: Set up Rust
-        uses: actions/setup-rust@v1
-        with:
-          rust-version: '1.68'
+        uses: raftario/setup-rust-action@v1
       
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli
