@@ -42,7 +42,7 @@ jobs:
         # Write the Tauri configuration
         
       - name: Build Tauri app
-        run: npm run tauri build
+        run: tauri build
         working-directory: ./my-tauri-app
         # Build the Tauri app
 
