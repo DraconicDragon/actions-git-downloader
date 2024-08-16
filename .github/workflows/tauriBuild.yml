@@ -49,18 +49,25 @@ jobs:
         # Write the Tauri configuration
 
       - name: Build React app
-        run: npm run build
+        run: npm run build --if-present
         working-directory: ./my-tauri-app
         # Build the React app
 
       - name: Build Tauri app
-        run: tauri build
+        run: tauri build --release
         working-directory: ./my-tauri-app
         # Build the Tauri app
+
+      - name: Clean up unnecessary files
+        run: |
+          cd my-tauri-app/src-tauri/target/release
+          del *.dSYM /S /Q
+          strip --strip-unneeded *.exe
+        # Remove unnecessary files and strip debug symbols from binaries
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
           name: tauri-build
           path: ./my-tauri-app/src-tauri/target/release
-        # Upload the build artifacts
+        # Upload the cleaned and optimized build artifacts
