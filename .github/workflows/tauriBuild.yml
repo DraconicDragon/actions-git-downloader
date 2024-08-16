@@ -1,0 +1,68 @@
+name: Create and Build Tauri App
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18.x'
+        
+      - name: Install Node.js dependencies
+        run: npm install -g create-react-app
+        # Install globally so we can use it to create the React app
+
+      - name: Create React app
+        run: npx create-react-app my-tauri-app
+        # Create the React project
+
+      - name: Set up Rust
+        uses: actions/setup-rust@v1
+        with:
+          rust-version: '1.68'
+      
+      - name: Install Tauri CLI
+        run: npm install -g @tauri-apps/cli
+        working-directory: ./my-tauri-app
+
+      - name: Initialize Tauri
+        run: |
+          cd my-tauri-app
+          tauri init
+        # Initialize Tauri in the React project
+
+      - name: Configure Tauri
+        run: |
+          cd my-tauri-app/src-tauri
+          echo '{ "build": { "distDir": "../build", "devPath": "http://localhost:3000" }, "tauri": { "windows": [ { "url": "http://192.168.178.33:7860", "title": "My Tauri App" } ] } }' > tauri.conf.json
+        # Write the Tauri configuration
+
+      - name: Build React app
+        run: npm run build
+        working-directory: ./my-tauri-app
+        # Build the React app
+
+      - name: Build Tauri app
+        run: tauri build
+        working-directory: ./my-tauri-app
+        # Build the Tauri app
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: tauri-build
+          path: ./my-tauri-app/src-tauri/target/release
+        # Upload the build artifacts
