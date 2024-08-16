@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '18.x'
 
-      - name make dir
+      - name: make dir
         run: mkdir my-tauri-app
       
       - name: Install Tauri CLI
