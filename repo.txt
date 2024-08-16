@@ -1,1 +1,1 @@
-https://github.com/bmaltais/kohya_ss
+https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker
