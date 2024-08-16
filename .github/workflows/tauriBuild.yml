@@ -20,17 +20,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-        
-      - name: Install Node.js dependencies
-        run: npm install -g create-react-app
-        # Install globally so we can use it to create the React app
 
-      - name: Create React app
-        run: npx create-react-app my-tauri-app
-        # Create the React project
-
-      #- name: Set up Rust
-       # uses: raftario/setup-rust-action@v1
       
       - name: Install Tauri CLI
         run: npm install -g @tauri-apps/cli
@@ -45,25 +35,13 @@ jobs:
       - name: Configure Tauri
         run: |
           cd my-tauri-app/src-tauri
-          echo '{ "build": { "distDir": "../build", "devPath": "http://localhost:3000" }, "tauri": { "windows": [ { "url": "http://192.168.178.33:7860", "title": "My Tauri App" } ] } }' > tauri.conf.json
+          echo '{ "tauri": { "windows": [ { "url": "http://192.168.178.33:7860", "title": "My Tauri App" } ] } }' > tauri.conf.json
         # Write the Tauri configuration
-
-      - name: Build React app
-        run: npm run build --if-present
-        working-directory: ./my-tauri-app
-        # Build the React app
-
+        
       - name: Build Tauri app
-        run: tauri build --release
+        run: npm run tauri build
         working-directory: ./my-tauri-app
         # Build the Tauri app
-
-      - name: Clean up unnecessary files
-        run: |
-          cd my-tauri-app/src-tauri/target/release
-          del *.dSYM /S /Q
-          strip --strip-unneeded *.exe
-        # Remove unnecessary files and strip debug symbols from binaries
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
