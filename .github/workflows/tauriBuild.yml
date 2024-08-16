@@ -38,8 +38,7 @@ jobs:
       - name: Configure Tauri
         run: |
           cd my-tauri-app/src-tauri
-          echo '{ "tauri": { "windows": [ { "url": "http://192.168.178.33:7860", "title": "My Tauri App" } ] } }' > tauri.conf.json
-        # Write the Tauri configuration
+          echo '{ "build": { "distDir": "192.168.178.33:7860" }, "tauri": { "windows": [ { "url": "http://192.168.178.33:7860", "title": "My Tauri App" } ] } }' > tauri.conf.json        # Write the Tauri configuration
         
       - name: Build Tauri app
         run: tauri build
