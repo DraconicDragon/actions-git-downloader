@@ -1,1 +1,1 @@
-https://github.com/new-sankaku/stable-diffusion-webui-simple-manga-maker
+https://github.com/Stability-AI/generative-models
