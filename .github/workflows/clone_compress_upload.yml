@@ -11,11 +11,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Read repository URL
       id: read-repo-url
-      run: echo "::set-output name=url::$(cat repo.txt)"
+      run: echo echo "url=$(cat repo.txt)" >> $GITHUB_OUTPUT
       
     - name: Clone the specified repository
       run: git clone --recurse-submodules ${{ steps.read-repo-url.outputs.url }} cloned-repo
