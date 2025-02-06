@@ -1,1 +1,1 @@
-https://github.com/comfyanonymous/ComfyUI
+https://github.com/ostris/ai-toolkit
