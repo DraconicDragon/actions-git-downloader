@@ -30,8 +30,8 @@ jobs:
         git lfs pull
         git submodule update --init --recursive
 
-    - name: Compress the repository using 7z (PPMd)
-      run: 7z a -t7z -mx=9 -m0=PPMd compressed-repo.7z cloned-repo
+    - name: Compress the repository using 7z (LZMA2 fast)
+      run: 7z a -t7z -mx=3 -m0=LZMA2 compressed-repo.7z cloned-repo
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
