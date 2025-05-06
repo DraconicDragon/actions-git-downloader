@@ -1,9 +1,7 @@
 name: Clone and Compress
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # Enables manual trigger via GitHub UI
 
 jobs:
   clone-compress:
@@ -13,26 +11,28 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Install required tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y p7zip-full git-lfs
+        git lfs install
+
     - name: Read repository URL
       id: read-repo-url
       run: echo "url=$(cat repo.txt)" >> $GITHUB_OUTPUT
-      
-    - name: Clone the specified repository
-      run: git clone --recurse-submodules ${{ steps.read-repo-url.outputs.url }} cloned-repo
 
-    - name: Update submodules
+    - name: Clone the specified repository (with Git LFS)
       run: |
+        git clone --recurse-submodules ${{ steps.read-repo-url.outputs.url }} cloned-repo
         cd cloned-repo
+        git lfs pull
         git submodule update --init --recursive
 
-    - name: Compress the repository
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y zip
-        zip -r9 compressed-repo.zip cloned-repo
+    - name: Compress the repository using 7z (PPMd)
+      run: 7z a -t7z -mx=9 -m0=PPMd compressed-repo.7z cloned-repo
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: compressed-repo
-        path: compressed-repo.zip
+        path: compressed-repo.7z
